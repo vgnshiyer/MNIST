@@ -61,10 +61,11 @@ class Network:
         gradient descent using backpropagation to a single mini batch.
         The "mini_batch" is a list of tuples "(x, y)", and "eta"
         is the learning rate."""
-        nabla_b = [np.zeros(b.shape) for b in self.biases] # gradient accumulators
+        nabla_b = [np.zeros(b.shape) for b in self.biases]  # gradient accumulators
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
-            delta_nabla_b, delta_nabla_w = self.backprop(x, y) # weight and bias gradients for one single example for all neurons
+            delta_nabla_b, delta_nabla_w = self.backprop(
+                x, y)  # per-example gradients for all neurons
             nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
             nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
         # these are the learning steps (error correction)
@@ -100,7 +101,7 @@ class Network:
             z = zs[-l]
             sp = sigmoid_prime(z)
             delta = np.dot(self.weights[-l+1].transpose(), delta) * sp  # BP2
-            nabla_b[-l] = delta  #BP3
+            nabla_b[-l] = delta  # BP3
             nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())  # BP4
         return (nabla_b, nabla_w)
 
