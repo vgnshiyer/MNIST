@@ -17,6 +17,29 @@ import sys
 import numpy as np
 
 
+class QuadraticCost:
+
+    @staticmethod
+    def fn(a, y):
+        """Return the cost associated with an output ``a`` and desired output ``y``."""
+        return 0.5 * np.linalg.norm(a-y)**2
+
+    @staticmethod
+    def delta(z, a, y):
+        """Return the error delta from the output layer."""
+        return (a - y) * sigmoid_prime(z)
+
+
+def sigmoid(z):
+    """The sigmoid function."""
+    return 1.0/(1.0+np.exp(-z))
+
+
+def sigmoid_prime(z):
+    """Derivative of the sigmoid function."""
+    return sigmoid(z)*(1-sigmoid(z))
+
+
 class CrossEntropyCost:
 
     @staticmethod
@@ -40,19 +63,6 @@ class CrossEntropyCost:
         consistent with the delta method for other cost classes.
         """
         return (a - y)
-
-
-class QuadraticCost:
-
-    @staticmethod
-    def fn(a, y):
-        """Return the cost associated with an output ``a`` and desired output ``y``."""
-        return 0.5 * np.linalg.norm(a-y)**2
-
-    @staticmethod
-    def delta(z, a, y):
-        """Return the error delta from the output layer."""
-        return (a - y) * sigmoid_prime(z)
 
 
 class Network:
@@ -312,13 +322,3 @@ def vectorized_result(j):
     e = np.zeros((10, 1))
     e[j] = 1.0
     return e
-
-
-def sigmoid(z):
-    """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
-
-
-def sigmoid_prime(z):
-    """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
