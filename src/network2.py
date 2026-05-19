@@ -17,6 +17,16 @@ import sys
 import numpy as np
 
 
+def sigmoid(z):
+    """The sigmoid function."""
+    return 1.0/(1.0+np.exp(-z))
+
+
+def sigmoid_prime(z):
+    """Derivative of the sigmoid function."""
+    return sigmoid(z)*(1-sigmoid(z))
+
+
 class QuadraticCost:
 
     @staticmethod
@@ -28,16 +38,6 @@ class QuadraticCost:
     def delta(z, a, y):
         """Return the error delta from the output layer."""
         return (a - y) * sigmoid_prime(z)
-
-
-def sigmoid(z):
-    """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
-
-
-def sigmoid_prime(z):
-    """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
 
 
 class CrossEntropyCost:
@@ -83,21 +83,6 @@ class Network:
         self.default_weight_initializer()
         self.cost = cost
 
-    def default_weight_initializer(self):
-        """Initialize each weight using a Gaussian distribution with mean 0
-        and standard deviation 1 over the square root of the number of
-        weights connecting to the same neuron.  Initialize the biases
-        using a Gaussian distribution with mean 0 and standard
-        deviation 1.
-
-        Note that the first layer is assumed to be an input layer, and
-        by convention we won't set any biases for those neurons, since
-        biases are only ever used in computing the outputs from later
-        layers.
-        """
-        self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
-        self.weights = [np.random.randn(y, x)/np.sqrt(x) for x, y in zip(self.sizes[:-1], self.sizes[1:])]
-
     def large_weight_initializer(self):
         """Initialize the weights using a Gaussian distribution with mean 0
         and standard deviation 1.  Initialize the biases using a
@@ -115,6 +100,21 @@ class Network:
         """
         self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
         self.weights = [np.random.randn(y, x) for x, y in zip(self.sizes[:-1], self.sizes[1:])]
+
+    def default_weight_initializer(self):
+        """Initialize each weight using a Gaussian distribution with mean 0
+        and standard deviation 1 over the square root of the number of
+        weights connecting to the same neuron.  Initialize the biases
+        using a Gaussian distribution with mean 0 and standard
+        deviation 1.
+
+        Note that the first layer is assumed to be an input layer, and
+        by convention we won't set any biases for those neurons, since
+        biases are only ever used in computing the outputs from later
+        layers.
+        """
+        self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
+        self.weights = [np.random.randn(y, x)/np.sqrt(x) for x, y in zip(self.sizes[:-1], self.sizes[1:])]
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
@@ -162,28 +162,26 @@ class Network:
                 # gradient descent step
                 self.update_mini_batch(
                     mini_batch, eta, lmbda, len(training_data))
-            print("Epoch %s training complete" % j)
+
+            print(f"Epoch {j} training complete")
             if monitor_training_cost:
                 cost = self.total_cost(training_data, lmbda)
                 training_cost.append(cost)
-                print("Cost on training data: {}".format(cost))
+                print(f"Cost on training data: {cost}")
             if monitor_training_accuracy:
                 accuracy = self.accuracy(training_data, convert=True)
                 training_accuracy.append(accuracy)
-                print("Accuracy on training data: {} / {}".format(
-                    accuracy, n))
+                print(f"Accuracy on training data: {accuracy} / {n}")
             if monitor_evaluation_cost:
                 cost = self.total_cost(evaluation_data, lmbda, convert=True)
                 evaluation_cost.append(cost)
-                print("Cost on evaluation data: {}".format(cost))
+                print(f"Cost on evaluation data: {cost}")
             if monitor_evaluation_accuracy:
                 accuracy = self.accuracy(evaluation_data)
                 evaluation_accuracy.append(accuracy)
-                print("Accuracy on evaluation data: {} / {}".format(
-                    accuracy, n_data))
-            print()
-        return evaluation_cost, evaluation_accuracy, \
-            training_cost, training_accuracy
+                print(f"Accuracy on evaluation data: {accuracy} / {n_data}")
+            print(f"Epoch {j} evaluation complete")
+        return evaluation_cost, evaluation_accuracy, training_cost, training_accuracy
 
     def update_mini_batch(self, mini_batch, eta, lmbda, n):
         """Update the network's weights and biases by applying gradient
@@ -322,3 +320,40 @@ def vectorized_result(j):
     e = np.zeros((10, 1))
     e[j] = 1.0
     return e
+
+"""
+
+SGD()
+  for epoch -> epochs
+    shuffle training data
+    for mini_batch -> mini_batches(training_data, mini_batch_size)
+      initialize nabla_b and nabla_w
+      for x, y in mini_batch
+        delta_nabla_b, delta_nabla_w = backprop(x, y)
+        accumulate delta_nabla_w in nabla_w
+        accumulate delta_nabla_b in nabla_b
+      update weights and biases with weight decay (L2 Regularization)
+
+Backprop(x, y)
+  initialize nabla_b and nabla_w
+
+  # forward pass
+  activation = x
+  for each layer l
+    z = w · activation + b
+    activation = sigmoid(z)
+    store z and activation
+
+  # backward pass (output layer)
+  delta = cost.delta(z_last, a_last, y)            # BP1: output error
+  nabla_b[last] = delta                             # BP3: ∂C/∂b = delta
+  nabla_w[last] = delta · a[second_last].T          # BP4: ∂C/∂w = delta · a_prev.T
+
+  # backward pass (hidden layers, from second-last to first)
+  for l = 2 to num_layers - 1
+    delta = (w[l+1].T · delta) * sigmoid_prime(z)   # BP2: propagate error back
+    nabla_b[l] = delta                               # BP3
+    nabla_w[l] = delta · a[l-1].T                    # BP4
+
+  return (nabla_b, nabla_w)
+"""
