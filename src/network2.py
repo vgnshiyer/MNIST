@@ -180,7 +180,7 @@ class Network:
                 accuracy = self.accuracy(evaluation_data)
                 evaluation_accuracy.append(accuracy)
                 print(f"Accuracy on evaluation data: {accuracy} / {n_data}")
-            print(f"Epoch {j} evaluation complete")
+            print(f"Epoch {j} evaluation complete\n")
         return evaluation_cost, evaluation_accuracy, training_cost, training_accuracy
 
     def update_mini_batch(self, mini_batch, eta, lmbda, n):
@@ -356,4 +356,28 @@ Backprop(x, y)
     nabla_w[l] = delta · a[l-1].T                    # BP4
 
   return (nabla_b, nabla_w)
+"""
+
+
+"""
+-- eta --
+threshold: 10
+largest at which decreases: 1.0
+
+-- epochs --
+highest: epoch 26
+stop at 30
+
+-- learning rate schedule --
+start at eta 1.0 for 10 epochs
+then eta 0.5 for 10 epochs
+then eta 0.25 for 10 epochs
+max accuracy: 96.32%
+
+-- lmbda --
+1.0 - max 95%
+10 - accuracy started getting worse (<= 93%)
+0.5 - max 96%
+
+new eta after lmbda: 0.5
 """
